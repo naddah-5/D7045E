@@ -4,7 +4,16 @@
 
 using namespace std;
 
-void generator(bool fromFile, string file){
+class Generator{
+    public:
+    void generator(bool fromFile, string file);
+
+    private:
+
+};
+
+
+void Generator::generator(bool fromFile, string file){
     if (fromFile) {
         // if the function is called to open a file it is opened with read and write
         fstream myfile (file);
