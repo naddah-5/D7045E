@@ -2,5 +2,5 @@
 #include <iostream>
 #include <fstream>
 
-using namespace generator;
+using namespace std;
 
