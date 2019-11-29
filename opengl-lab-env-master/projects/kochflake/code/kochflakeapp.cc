@@ -150,7 +150,7 @@ KochflakeApp::Open() {
 	// glm::vec3 position0 = glm::vec3(-0.5f, -0.5f, -1);
 
 	// iteration is the number of iterations of the koch-snowflake that will be implemented, the base case, 0, is a triangle
-	GLint itteration = 3;
+	GLint itteration = 13;
 
 	// assign the buf arrays size to hold the vertices and their color, the number of vertices are (iterations - 1) * 4 and 6 elements are 
 	// required to hold information of a vertice and its color. 
