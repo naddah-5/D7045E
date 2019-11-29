@@ -12,6 +12,7 @@
 #include <gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
 #include <vector>
 #include <iostream>
+#include <stdlib.h>
 
 const GLchar* vs =
 "#version 310 es\n"
@@ -59,6 +60,71 @@ TriangulationApp::~TriangulationApp()
 /**
 */
 
+// This function takes 3 points as input data, a, b, and c.
+// It then checks if the point c is to the left side of a line
+// from a to b, and if so it returns true.
+bool TriangulationApp::checkDirectionLeft(glm::vec2 a, glm::vec2 b, glm::vec2 c){
+	if( (b.x-a.x)*(c.y-a.y) > (b.y-a.y)*(c.x-a.x) ){
+		return true;
+	} else{
+		return false;
+	}
+}
+
+void TriangulationApp::hullCalc(std::vector<glm::vec2> inputPoints){
+	int i = 0;
+	int inputSize = inputPoints.size();
+	std::vector<glm::vec2> hull;
+
+	while (i < inputSize){
+		if(hull.size() < 2){
+			hull.push_back(inputPoints[i]);
+		} else{
+			while(checkDirectionLeft(hull[hull.size()-2], hull[hull.size()-1], inputPoints[i]) && hull.size() > 2){
+				hull.pop_back();
+			}
+			hull.push_back(inputPoints[i]);
+		}
+		i++;
+	}
+	while (i > 0){
+		if(hull.size() < 2){
+			hull.push_back(inputPoints[i]);
+		} else{
+			while(checkDirectionLeft(hull[hull.size()-2], hull[hull.size()-1], inputPoints[i]) && hull.size() > 2){
+				hull.pop_back();
+			}
+			hull.push_back(inputPoints[i]);
+		}
+		i--;
+	}
+	
+	
+}
+
+//bubbel sort
+std::vector<glm::vec2> TriangulationApp::pointSortByX(std::vector<glm::vec2> inputPoints){
+	int check = 0;
+	glm::vec2 temp;
+	while (check < inputPoints.size()-1){	
+		check = 0;
+		for (int i = 1; i < inputPoints.size()-1; i++){
+			if((inputPoints[i]).x < inputPoints[i-1].x){
+				temp = inputPoints[i-1];
+				inputPoints[i-1] = inputPoints[i];
+				inputPoints[i] = temp;
+			}
+			else if(inputPoints[i].y < inputPoints[i-1].y){
+				temp = inputPoints[i-1];
+				inputPoints[i-1] = inputPoints[i];
+				inputPoints[i] = temp;
+			}
+			else {
+				check++;
+			}
+		}
+	}
+}
 
 bool
 TriangulationApp::Open() {

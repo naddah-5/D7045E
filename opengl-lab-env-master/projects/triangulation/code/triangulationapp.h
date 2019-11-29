@@ -35,5 +35,9 @@ private:
 	GLuint pixelShader;
 	GLuint triangle;
 	Display::Window* window;
+
+	bool checkDirectionLeft(glm::vec2 a, glm::vec2 b, glm::vec2 c);
+	void hullCalc(std::vector<glm::vec2>);
+	std::vector<glm::vec2> pointSortByX(std::vector<glm::vec2>);
 };
 } // namespace Triangulation
