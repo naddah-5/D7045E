@@ -106,19 +106,26 @@ void TriangulationApp::hullCalc(std::vector<glm::vec2> inputPoints){
 std::vector<glm::vec2> TriangulationApp::pointSortByX(std::vector<glm::vec2> inputPoints){
 	int check = 0;
 	glm::vec2 temp;
-	while (check < inputPoints.size()-1){	
+	while (check < inputPoints.size()-1){
+		// check is used to check if the inputPoints are sorted, if they are the check will be equal to the inputPoints size.
 		check = 0;
+		// setting up a for-loop to go through all the point vectors and switch them if the rightmost has a lower x-value than the left one.
 		for (int i = 1; i < inputPoints.size()-1; i++){
 			if((inputPoints[i]).x < inputPoints[i-1].x){
 				temp = inputPoints[i-1];
 				inputPoints[i-1] = inputPoints[i];
 				inputPoints[i] = temp;
 			}
-			else if(inputPoints[i].y < inputPoints[i-1].y){
+			// adding a check for the edge case when both x-values are equal, when it is the algoithm will put the input vector 
+			// with the higher Y-value in the left most spot. This will ensure that a special edge case does not occur on either the 
+			// hullCalc from left to right or from right to left.
+			else if(inputPoints[i].x == inputPoints[i-1].x && inputPoints[i].y > inputPoints[i-1].y){
 				temp = inputPoints[i-1];
 				inputPoints[i-1] = inputPoints[i];
 				inputPoints[i] = temp;
 			}
+			// if the value currently being checked is sorted relative to each other, increment the check variable by one 
+			// check will be reset after each run through and when the check reaches the inputPoints size the loop will break and be sorted.
 			else {
 				check++;
 			}
