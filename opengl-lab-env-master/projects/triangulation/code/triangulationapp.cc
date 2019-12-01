@@ -73,25 +73,37 @@ bool TriangulationApp::checkDirectionLeft(glm::vec2 a, glm::vec2 b, glm::vec2 c)
 
 void TriangulationApp::hullCalc(std::vector<glm::vec2> inputPoints){
 	int i = 0;
-	int inputSize = inputPoints.size();
 	std::vector<glm::vec2> hull;
 
-	while (i < inputSize){
+	// this loop goes from the lowest x value to the highest, adding points to the convex hull
+	while (i < inputPoints.size()){
+		// if the current hull has less than 2 points in it we add the next point regardless of any checks
+		// this is because this implementation of andrew's algorithm requires two points already in the hull to determine
+		// if the next point should be inserted.
 		if(hull.size() < 2){
 			hull.push_back(inputPoints[i]);
-		} else{
-			while(checkDirectionLeft(hull[hull.size()-2], hull[hull.size()-1], inputPoints[i]) && hull.size() > 2){
+		} else {
+			// if the hull has more than two elments in it and the next element would require a left turn 
+			// the last element is removed from the hull vector as it can not be part of the convex hull.
+			// this is repeated until a right turn or a line is found, when it is that point will be inserted
+			// into the hull vector and we move on to the next element in the inputPoints vector.
+			while(checkDirectionLeft(hull[hull.size()-2], hull[hull.size()-1], inputPoints[i]) && hull.size() > 1){
 				hull.pop_back();
 			}
 			hull.push_back(inputPoints[i]);
 		}
 		i++;
 	}
+
+	// when the entire list has been inserted into the upper hull we itterate through the list again but backwards.
+	// the result of this is that the hull from the previous loop (which only covered the top of the input points)
+	// will be extended to cover the bottom part as well. this can be done because the function used to check a points position
+	// relative to the hull is relative to the last two points in the hull and not relative to origo.
 	while (i > 0){
 		if(hull.size() < 2){
 			hull.push_back(inputPoints[i]);
 		} else{
-			while(checkDirectionLeft(hull[hull.size()-2], hull[hull.size()-1], inputPoints[i]) && hull.size() > 2){
+			while(checkDirectionLeft(hull[hull.size()-2], hull[hull.size()-1], inputPoints[i]) && hull.size() > 1){
 				hull.pop_back();
 			}
 			hull.push_back(inputPoints[i]);
@@ -144,8 +156,8 @@ TriangulationApp::Open() {
 
 
 	if (this->window->Open()) {
-		// assigns background color to pale yellow
-		glClearColor(0.8f, 1.0f, 0.3f, 1.0f);
+		// assigns background color
+		glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 
 		// setup vertex shader
 		this->vertexShader = glCreateShader(GL_VERTEX_SHADER);
