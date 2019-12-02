@@ -12,7 +12,10 @@
 #include <gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
 #include <vector>
 #include <iostream>
+#include <fstream>
+#include <iomanip>
 #include <stdlib.h>
+#include "datageneration/generator.h"
 
 const GLchar* vs =
 "#version 310 es\n"
@@ -71,7 +74,7 @@ bool TriangulationApp::checkDirectionLeft(glm::vec2 a, glm::vec2 b, glm::vec2 c)
 	}
 }
 
-void TriangulationApp::hullCalc(std::vector<glm::vec2> inputPoints){
+std::vector<glm::vec2> TriangulationApp::hullCalc(std::vector<glm::vec2> inputPoints){
 	int i = 0;
 	std::vector<glm::vec2> hull;
 
@@ -111,7 +114,7 @@ void TriangulationApp::hullCalc(std::vector<glm::vec2> inputPoints){
 		i--;
 	}
 	
-	
+	return hull;
 }
 
 //bubbel sort
@@ -145,14 +148,47 @@ std::vector<glm::vec2> TriangulationApp::pointSortByX(std::vector<glm::vec2> inp
 	}
 }
 
+std::vector<glm::vec2> TriangulationApp::generatePoints(string fileName, int generatorSize){
+	std::vector<glm::vec2> pointData;
+	pointData = generator(fileName, generatorSize);
+	return pointData;
+}
+std::vector<glm::vec2> TriangulationApp::inputFile(string fileName){
+	std::vector<glm::vec2> pointData;
+	pointData = readFrom(fileName);
+}
+
+void TriangulationApp::interface(std::vector<glm::vec2> pointdata){
+	std::vector<glm::vec2> dataPoints;
+	std::vector<glm::vec2> hull;
+	dataPoints = pointSortByX(pointdata);
+	hull = hullCalc(dataPoints);
+}
+
 bool
 TriangulationApp::Open() {
 	App::Open();
 	this->window = new Display::Window;
 	this->window->SetSize(800, 800);
-	window->SetKeyPressFunction([this](int32, int32, int32, int32){
-		this->window->Close();
-	});
+	std::vector<glm::vec2> dataPoints;
+	window->SetKeyPressFunction([this](int32 key, int32 scancode, int32 action, int32 mods)
+		{
+			if (key == 256 && action == GLFW_PRESS) {
+				this->window->Close();
+			}
+			else if (key == 51 && action == GLFW_PRESS) {
+				// terminal input
+			}
+			else if (key == 50 && action == GLFW_PRESS) {
+				// read from file
+			}
+			else if (key == 49 && action == GLFW_PRESS) {
+				dataPoints = generatePoints("test.txt", 100);
+
+				// generate random points
+
+			}
+		});
 
 
 	if (this->window->Open()) {
@@ -241,7 +277,6 @@ TriangulationApp::Run() {
 		
 		
 		glEnableVertexAttribArray(0);
-		// glEnableVertexAttribArray(1);
 
 		// first int == index of the array to be drawn i.e. vertice points
 		// second int == the size of the expected input data, i.e. 3 == x, y	or 4 == R, G, B, gamma
@@ -249,7 +284,7 @@ TriangulationApp::Run() {
 		// GL_NORMALIZED == bool to indicate if input data is normalized 
 		// GL_STRIDE == indicates how large one chunks of the input data is, if it is 3 floats then it is sizeof(float32) * 2. i.e. input data off-set
 		// GL_ARRAY_BUFFER (pointer) == specifies the offset from the first datatype in the datastruct to the next one
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, NULL);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, NULL);
 		
 		glDrawArrays(GL_LINE_LOOP, 0, this->data.size());
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
