@@ -15,7 +15,6 @@
 #include <fstream>
 #include <iomanip>
 #include <stdlib.h>
-#include "datageneration/generator.h"
 
 const GLchar* vs =
 "#version 310 es\n"
@@ -63,6 +62,7 @@ TriangulationApp::~TriangulationApp()
 /**
 */
 
+
 // This function takes 3 points as input data, a, b, and c.
 // It then checks if the point c is to the left side of a line
 // from a to b, and if so it returns true.
@@ -76,7 +76,6 @@ bool TriangulationApp::checkDirectionLeft(glm::vec2 a, glm::vec2 b, glm::vec2 c)
 
 std::vector<glm::vec2> TriangulationApp::hullCalc(std::vector<glm::vec2> inputPoints){
 	int i = 0;
-	std::vector<glm::vec2> hull;
 
 	// this loop goes from the lowest x value to the highest, adding points to the convex hull
 	while (i < inputPoints.size()){
@@ -148,21 +147,30 @@ std::vector<glm::vec2> TriangulationApp::pointSortByX(std::vector<glm::vec2> inp
 	}
 }
 
-std::vector<glm::vec2> TriangulationApp::generatePoints(string fileName, int generatorSize){
-	std::vector<glm::vec2> pointData;
-	pointData = generator(fileName, generatorSize);
-	return pointData;
-}
-std::vector<glm::vec2> TriangulationApp::inputFile(string fileName){
-	std::vector<glm::vec2> pointData;
-	pointData = readFrom(fileName);
+std::vector<glm::vec2> TriangulationApp::readFrom(std::string fileName){
+	std::ifstream file(fileName);
+	data.clear();
+	if(file.is_open()){
+		GLfloat xVal, yVal;
+
+		while(file >> xVal >> yVal){
+			glm::vec2 point(xVal, yVal);
+			data.push_back(point);
+		}
+	}
+	else {
+		printf("No such file");
+		exit(1);
+	}
+	file.close();
 }
 
-void TriangulationApp::interface(std::vector<glm::vec2> pointdata){
-	std::vector<glm::vec2> dataPoints;
-	std::vector<glm::vec2> hull;
-	dataPoints = pointSortByX(pointdata);
-	hull = hullCalc(dataPoints);
+void TriangulationApp::pointGenerator(int numberOfPoints){
+	if(numberOfPoints > 3){
+		float randomNumber= rand() % 200;
+		randomNumber = randomNumber/100;
+		randomNumber = randomNumber - 1;
+	}
 }
 
 bool
@@ -170,7 +178,7 @@ TriangulationApp::Open() {
 	App::Open();
 	this->window = new Display::Window;
 	this->window->SetSize(800, 800);
-	std::vector<glm::vec2> dataPoints;
+	std::vector<glm::vec2> data;
 	window->SetKeyPressFunction([this](int32 key, int32 scancode, int32 action, int32 mods)
 		{
 			if (key == 256 && action == GLFW_PRESS) {
@@ -180,6 +188,7 @@ TriangulationApp::Open() {
 				// terminal input
 			}
 			else if (key == 50 && action == GLFW_PRESS) {
+				this->readFrom("test.txt");
 				// read from file
 			}
 			else if (key == 49 && action == GLFW_PRESS) {
@@ -188,6 +197,7 @@ TriangulationApp::Open() {
 
 			}
 		});
+
 
 
 	if (this->window->Open()) {

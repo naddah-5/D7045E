@@ -7,7 +7,6 @@
 */
 //------------------------------------------------------------------------------
 #include "core/app.h"
-#include "datageneration/generator.h"
 #include "render/window.h"
 #include <vector>
 #include <glm.hpp>
@@ -31,6 +30,8 @@ public:
 	
 private:
 	std::vector<glm::vec2> data;
+	std::vector<glm::vec2> hull;
+	std::vector<glm::vec2> internalPoints;
 	GLuint program;
 	GLuint vertexShader;
 	GLuint pixelShader;
@@ -40,9 +41,7 @@ private:
 	bool checkDirectionLeft(glm::vec2 a, glm::vec2 b, glm::vec2 c);
 	std::vector<glm::vec2> hullCalc(std::vector<glm::vec2>);
 	std::vector<glm::vec2> pointSortByX(std::vector<glm::vec2>);
-	std::vector<glm::vec2> inputData(char fileName, bool fromFile);
-	std::vector<glm::vec2> generatePoints(string fileName, int generatorSize);
-	std::vector<glm::vec2> inputFile(string fileName);
-	void interface(std::vector<glm::vec2> pointData);
+	std::vector<glm::vec2> readFrom(std::string fileName);
+	void pointGenerator(int numberOfPoints);
 };
 } // namespace Triangulation
