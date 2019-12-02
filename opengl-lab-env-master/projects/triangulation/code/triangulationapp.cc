@@ -183,7 +183,6 @@ TriangulationApp::Open() {
 				// read from file
 			}
 			else if (key == 49 && action == GLFW_PRESS) {
-				dataPoints = generatePoints("test.txt", 100);
 
 				// generate random points
 
