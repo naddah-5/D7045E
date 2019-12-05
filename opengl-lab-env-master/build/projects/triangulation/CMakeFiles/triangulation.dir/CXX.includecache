@@ -1287,6 +1287,8 @@ iomanip
 -
 stdlib.h
 -
+algorithm
+-
 
 /home/anders/Documents/D7045E/opengl-lab-env-master/projects/triangulation/code/triangulationapp.h
 core/app.h

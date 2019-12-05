@@ -15,6 +15,7 @@
 #include <fstream>
 #include <iomanip>
 #include <stdlib.h>
+#include <algorithm>
 
 const GLchar* vs =
 "#version 310 es\n"
@@ -35,7 +36,7 @@ const GLchar* ps =
 "out vec4 Color;\n"
 "void main()\n"
 "{\n"
-"	Color = vec4(1,0,0,1);\n"
+"	Color = vec4(0.4f,0.4f,0.4f,1);\n"
 "}\n";
 
 using namespace Display;
@@ -74,80 +75,84 @@ bool TriangulationApp::checkDirectionLeft(glm::vec2 a, glm::vec2 b, glm::vec2 c)
 	}
 }
 
-std::vector<glm::vec2> TriangulationApp::hullCalc(std::vector<glm::vec2> inputPoints){
+void TriangulationApp::hullCalc(){
+	hull.clear();
 	int i = 0;
 
 	// this loop goes from the lowest x value to the highest, adding points to the convex hull
-	while (i < inputPoints.size()){
+	while (i < data.size()){
 		// if the current hull has less than 2 points in it we add the next point regardless of any checks
 		// this is because this implementation of andrew's algorithm requires two points already in the hull to determine
 		// if the next point should be inserted.
 		if(hull.size() < 2){
-			hull.push_back(inputPoints[i]);
+			hull.push_back(data[i]);
 		} else {
 			// if the hull has more than two elments in it and the next element would require a left turn 
 			// the last element is removed from the hull vector as it can not be part of the convex hull.
 			// this is repeated until a right turn or a line is found, when it is that point will be inserted
 			// into the hull vector and we move on to the next element in the inputPoints vector.
-			while(checkDirectionLeft(hull[hull.size()-2], hull[hull.size()-1], inputPoints[i]) && hull.size() > 1){
+			while(checkDirectionLeft(hull[hull.size()-2], hull[hull.size()-1], data[i]) && hull.size() > 1){
 				hull.pop_back();
 			}
-			hull.push_back(inputPoints[i]);
+			hull.push_back(data[i]);
 		}
 		i++;
 	}
-
+	i--;
 	// when the entire list has been inserted into the upper hull we itterate through the list again but backwards.
 	// the result of this is that the hull from the previous loop (which only covered the top of the input points)
 	// will be extended to cover the bottom part as well. this can be done because the function used to check a points position
 	// relative to the hull is relative to the last two points in the hull and not relative to origo.
-	while (i > 0){
+	while (i >= 0){
 		if(hull.size() < 2){
-			hull.push_back(inputPoints[i]);
+			hull.push_back(data[i]);
 		} else{
-			while(checkDirectionLeft(hull[hull.size()-2], hull[hull.size()-1], inputPoints[i]) && hull.size() > 1){
+			while(checkDirectionLeft(hull[hull.size()-2], hull[hull.size()-1], data[i]) && hull.size() > 1){
 				hull.pop_back();
 			}
-			hull.push_back(inputPoints[i]);
+			hull.push_back(data[i]);
 		}
 		i--;
 	}
-	
-	return hull;
 }
 
 //bubbel sort
-std::vector<glm::vec2> TriangulationApp::pointSortByX(std::vector<glm::vec2> inputPoints){
-	int check = 0;
+void TriangulationApp::pointSortByX(){
+	int check = 1;
 	glm::vec2 temp;
-	while (check < inputPoints.size()-1){
-		// check is used to check if the inputPoints are sorted, if they are the check will be equal to the inputPoints size.
-		check = 0;
-		// setting up a for-loop to go through all the point vectors and switch them if the rightmost has a lower x-value than the left one.
-		for (int i = 1; i < inputPoints.size()-1; i++){
-			if((inputPoints[i]).x < inputPoints[i-1].x){
-				temp = inputPoints[i-1];
-				inputPoints[i-1] = inputPoints[i];
-				inputPoints[i] = temp;
-			}
-			// adding a check for the edge case when both x-values are equal, when it is the algoithm will put the input vector 
-			// with the higher Y-value in the left most spot. This will ensure that a special edge case does not occur on either the 
-			// hullCalc from left to right or from right to left.
-			else if(inputPoints[i].x == inputPoints[i-1].x && inputPoints[i].y > inputPoints[i-1].y){
-				temp = inputPoints[i-1];
-				inputPoints[i-1] = inputPoints[i];
-				inputPoints[i] = temp;
-			}
-			// if the value currently being checked is sorted relative to each other, increment the check variable by one 
-			// check will be reset after each run through and when the check reaches the inputPoints size the loop will break and be sorted.
-			else {
-				check++;
-			}
-		}
-	}
+
+	std::sort(data.begin(), data.end(), [](glm::vec2 a, glm::vec2 b){
+		return (a.x < b.x);
+	});
+
+	//while (check < data.size()-1){
+	//	// check is used to check if the inputPoints are sorted, if they are the check will be equal to the inputPoints size.
+	//	check = 1;
+	//	// setting up a for-loop to go through all the point vectors and switch them if the rightmost has a lower x-value than the left one.
+	//	for (int i = 1; i < data.size(); i++){
+	//		if((data[i]).x < data[i-1].x){
+	//			temp = data[i-1];
+	//			data[i-1] = data[i];
+	//			data[i] = temp;
+	//			// adding a check for the edge case when both x-values are equal, when it is the algoithm will put the input vector 
+	//			// with the higher Y-value in the left most spot. This will ensure that a special edge case does not occur on either the 
+	//			// hullCalc from left to right or from right to left.
+	//			/*if(data[i].x == data[i-1].x && data[i].y > data[i-1].y){
+	//				temp = data[i-1];
+	//				data[i-1] = data[i];
+	//				data[i] = temp;
+	//			}*/
+	//		}
+	//		// if the value currently being checked is sorted relative to each other, increment the check variable by one 
+	//		// check will be reset after each run through and when the check reaches the inputPoints size the loop will break and be sorted.
+	//		else {
+	//			check++;
+	//		}
+	//	}
+	//}
 }
 
-std::vector<glm::vec2> TriangulationApp::readFrom(std::string fileName){
+void TriangulationApp::readFrom(std::string fileName){
 	std::ifstream file(fileName);
 	data.clear();
 	if(file.is_open()){
@@ -164,13 +169,48 @@ std::vector<glm::vec2> TriangulationApp::readFrom(std::string fileName){
 	}
 	file.close();
 }
+float TriangulationApp::randomFloatBetween(float low, float high){
+    float random = ( (float) rand() ) / ( (float) RAND_MAX);
+    float span = high - low;
+    float adjustedRNG = (random * span) + low;
+    return adjustedRNG;
+}
 
-void TriangulationApp::pointGenerator(int numberOfPoints){
+void TriangulationApp::randomPointGenerator(int numberOfPoints){
 	if(numberOfPoints > 3){
-		float randomNumber= rand() % 200;
-		randomNumber = randomNumber/100;
-		randomNumber = randomNumber - 1;
+		data.clear();
+		GLfloat xVal, yVal;
+		for (int i = 0; i < numberOfPoints; i++){
+			xVal = randomFloatBetween(-1.0f, 1.0f);
+			yVal = randomFloatBetween(-1.0f, 1.0f);
+			glm::vec2 point = glm::vec2(xVal, yVal);
+			data.push_back(point);
+		}
 	}
+}
+
+void TriangulationApp::printData(){
+	for (int j = 0; j < data.size(); j++){
+		GLfloat xVal, yVal;
+		xVal = data[j].x;
+		yVal = data[j].y;
+		std::cout << xVal << " " << yVal << "\n";
+	}
+	std::cout << "\n";
+}
+
+void TriangulationApp::printHull(){
+	for (int j = 0; j < hull.size(); j++){
+		GLfloat xVal, yVal;
+		xVal = hull[j].x;
+		yVal = hull[j].y;
+		std::cout << xVal << " " << yVal << "\n";
+	}
+	std::cout << "\n";
+}
+
+void TriangulationApp::triangulate(){
+	
 }
 
 bool
@@ -178,7 +218,9 @@ TriangulationApp::Open() {
 	App::Open();
 	this->window = new Display::Window;
 	this->window->SetSize(800, 800);
-	std::vector<glm::vec2> data;
+	data.clear();
+	hull.clear();
+
 	window->SetKeyPressFunction([this](int32 key, int32 scancode, int32 action, int32 mods)
 		{
 			if (key == 256 && action == GLFW_PRESS) {
@@ -192,17 +234,20 @@ TriangulationApp::Open() {
 				// read from file
 			}
 			else if (key == 49 && action == GLFW_PRESS) {
-
 				// generate random points
-
+				randomPointGenerator(6);
+				pointSortByX();
+				printData();
+				hullCalc();
+				printHull();
 			}
 		});
-
+	
 
 
 	if (this->window->Open()) {
-		// assigns background color
-		glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+		// assigns background color to pale yellow
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
 		// setup vertex shader
 		this->vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -251,8 +296,8 @@ TriangulationApp::Open() {
 
 		// setup vbo
 		glGenBuffers(1, &this->triangle);
-		glBindBuffer(GL_ARRAY_BUFFER, this->triangle);
-		glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(glm::vec3), &data[0], GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, this->triangle);	
+		//glBufferData(GL_ARRAY_BUFFER, hull.size() * sizeof(glm::vec2), &data[0], GL_STATIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		return true;
 	}
@@ -266,6 +311,7 @@ void
 TriangulationApp::Run() {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glPointSize(4);
 
 	while (this->window->IsOpen()){
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -284,9 +330,9 @@ TriangulationApp::Run() {
 
 		// (3*(pow(4,itteration)))+1
 		
-		
 		glEnableVertexAttribArray(0);
-
+		//glEnableVertexAttribArray(1);
+	
 		// first int == index of the array to be drawn i.e. vertice points
 		// second int == the size of the expected input data, i.e. 3 == x, y	or 4 == R, G, B, gamma
 		// GL_FLOAT == what type of input data it is
@@ -294,8 +340,18 @@ TriangulationApp::Run() {
 		// GL_STRIDE == indicates how large one chunks of the input data is, if it is 3 floats then it is sizeof(float32) * 2. i.e. input data off-set
 		// GL_ARRAY_BUFFER (pointer) == specifies the offset from the first datatype in the datastruct to the next one
 		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, NULL);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (GLvoid*)(sizeof(float) * 2));
+		// glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float32) * 2, (GLvoid*)(sizeof(float32) * 2));
 		
-		glDrawArrays(GL_LINE_LOOP, 0, this->data.size());
+		
+		glBufferData(GL_ARRAY_BUFFER, hull.size()*sizeof(glm::vec2), hull.data(), GL_STATIC_DRAW);
+		glDrawArrays(GL_LINE_LOOP, 0, this->hull.size());
+		
+		
+		glBufferData(GL_ARRAY_BUFFER, data.size()*sizeof(glm::vec2), data.data(), GL_STATIC_DRAW);
+		glDrawArrays(GL_POINTS, 0, this->data.size());
+		
+
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		
 

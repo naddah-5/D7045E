@@ -39,9 +39,13 @@ private:
 	Display::Window* window;
 
 	bool checkDirectionLeft(glm::vec2 a, glm::vec2 b, glm::vec2 c);
-	std::vector<glm::vec2> hullCalc(std::vector<glm::vec2>);
-	std::vector<glm::vec2> pointSortByX(std::vector<glm::vec2>);
-	std::vector<glm::vec2> readFrom(std::string fileName);
-	void pointGenerator(int numberOfPoints);
+	void hullCalc();
+	void pointSortByX();
+	void readFrom(std::string fileName);
+	float randomFloatBetween(float min, float max);
+	void randomPointGenerator(int numberOfPoints);
+	void printData();
+	void printHull();
+	void triangulate();
 };
 } // namespace Triangulation
